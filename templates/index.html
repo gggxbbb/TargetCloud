@@ -59,11 +59,15 @@
 
         </form>
     </details>
-    <!--suppress HtmlUnknownTarget -->
-    <a href="/cloud" role="button" id="go-cloud" target="_blank">查看词云</a>
 
     <!--suppress HtmlUnknownTarget, HtmlDeprecatedAttribute -->
     <iframe id="cloud" frameborder="0" scrolling="no"></iframe>
+
+    <div style="text-align: center;">
+        <!--suppress HtmlUnknownTarget -->
+        <a href="/cloud" role="button" id="go-cloud" target="_blank">查看词云</a>
+    </div>
+
     <script>
         function initCloud() {
             const cloud = document.getElementById('cloud');
