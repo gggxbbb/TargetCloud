@@ -27,6 +27,7 @@
         <!--suppress HtmlUnknownTarget -->
         <form action="/add" method="post">
 
+            <!--
             <div class="grid">
 
                 <label for="f-class">
@@ -47,6 +48,7 @@
             </div>
             <small>上述信息仅用于核实身份，不会进行记录。</small>
             <hr>
+            -->
             <label for="f-target">
                 目标高校
                 <input type="text" id="f-target" name="target" placeholder="例：清华大学" required>
@@ -57,8 +59,10 @@
 
         </form>
     </details>
-
     <!--suppress HtmlUnknownTarget -->
+    <a href="/cloud" role="button" id="go-cloud" target="_blank">查看词云</a>
+
+    <!--suppress HtmlUnknownTarget, HtmlDeprecatedAttribute -->
     <iframe id="cloud" frameborder="0" scrolling="no"></iframe>
     <script>
         function initCloud() {
@@ -67,6 +71,11 @@
             const height = width * 0.618;
             cloud.style.height = height + 'px';
             cloud.src = '/cloud?width=' + width + '&height=' + height;
+
+            const goCloud = document.getElementById('go-cloud');
+            const window_width = window.innerWidth;
+            const window_height = window.innerHeight;
+            goCloud.href = '/cloud?width=' + window_width + '&height=' + window_height;
         }
 
         window.onload = initCloud;
