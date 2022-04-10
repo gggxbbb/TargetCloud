@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>目标高校词云</title>
+    <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@latest/css/pico.min.css">
+    <style>
+        #cloud {
+            width: 100%;
+            z-index: -1;
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+<main class="container" id="main">
+    <hgroup>
+        <h1>目标高校词云</h1>
+        <h2>匿名版</h2>
+    </hgroup>
+
+
+    <details>
+        <summary role="button">添加你的目标</summary>
+        <!--suppress HtmlUnknownTarget -->
+        <form action="/add" method="post">
+
+            <div class="grid">
+
+                <label for="f-class">
+                    班级
+                    <input type="text" id="f_class" name="class" placeholder="例：高二1班" required>
+                </label>
+
+                <label for="f-name">
+                    姓名
+                    <input type="text" id="f_name" name="name" placeholder="例：张三" required>
+                </label>
+
+                <label for="f-id">
+                    学号
+                    <input type="number" id="f_id" name="id" placeholder="例：0199" required>
+                </label>
+
+            </div>
+            <small>上述信息仅用于核实身份，不会进行记录。</small>
+            <hr>
+            <label for="f-target">
+                目标高校
+                <input type="text" id="f-target" name="target" placeholder="例：清华大学" required>
+                <small>我们不会与任何第三方分享你的目标。</small>
+            </label>
+
+            <button type="submit">提交</button>
+
+        </form>
+    </details>
+
+    <!--suppress HtmlUnknownTarget -->
+    <iframe id="cloud" frameborder="0" scrolling="no"></iframe>
+    <script>
+        function initCloud() {
+            const cloud = document.getElementById('cloud');
+            const width = cloud.offsetWidth;
+            const height = width * 0.618;
+            cloud.style.height = height + 'px';
+            cloud.src = '/cloud?width=' + width + '&height=' + height;
+        }
+
+        window.onload = initCloud;
+        window.onresize = initCloud;
+
+    </script>
+
+</main>
+
+</body>
+</html>
