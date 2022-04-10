@@ -1,18 +1,25 @@
 package main
 
 import (
+	"embed"
 	"github.com/gin-gonic/gin"
 	"github.com/go-echarts/go-echarts/charts"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"html/template"
 	"net/http"
 )
+
+import _ "embed"
 
 type TargetSchool struct {
 	gorm.Model
 	Name  string
 	Value int
 }
+
+//go:embed templates/*
+var templateFiles embed.FS
 
 func main() {
 
@@ -28,7 +35,12 @@ func main() {
 	}
 
 	r := gin.Default()
-	r.LoadHTMLGlob("templates/*")
+
+	templates, err := template.ParseFS(templateFiles, "templates/*.html")
+	if err != nil {
+		panic(err)
+	}
+	r.SetHTMLTemplate(templates)
 	r.GET("/", func(context *gin.Context) {
 		context.HTML(http.StatusOK, "index.html", gin.H{})
 	})
@@ -76,7 +88,7 @@ func main() {
 			return
 		}
 	})
-	err = r.Run()
+	err = r.Run("0.0.0.0:8054")
 	if err != nil {
 		return
 	}
