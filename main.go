@@ -82,7 +82,7 @@ func main() {
 			charts.InitOpts{PageTitle: "目标高校词云", Width: width + "px", Height: height + "px"},
 			charts.ToolboxOpts{Show: false},
 		)
-		wc.Add("", wcData)
+		wc.Add("", wcData, charts.WordCloudOpts{Shape: "star"})
 		err := wc.Render(context.Writer)
 		if err != nil {
 			return

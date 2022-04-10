@@ -63,23 +63,35 @@
     <!--suppress HtmlUnknownTarget, HtmlDeprecatedAttribute -->
     <iframe id="cloud" frameborder="0" scrolling="no"></iframe>
 
+    <!--
     <div style="text-align: center;">
-        <!--suppress HtmlUnknownTarget -->
         <a href="/cloud" role="button" id="go-cloud" target="_blank">查看词云</a>
     </div>
+    -->
 
+    <!--suppress JSSuspiciousNameCombination -->
     <script>
         function initCloud() {
+
+
+            const window_width = window.innerWidth;
+            const window_height = window.innerHeight;
+
             const cloud = document.getElementById('cloud');
             const width = cloud.offsetWidth;
-            const height = width * 0.618;
+            let height;
+
+            if (window_width > window_height) {
+                height = width * 0.618;
+            } else {
+                height = width;
+            }
+
             cloud.style.height = height + 'px';
             cloud.src = '/cloud?width=' + width + '&height=' + height;
 
-            const goCloud = document.getElementById('go-cloud');
-            const window_width = window.innerWidth;
-            const window_height = window.innerHeight;
-            goCloud.href = '/cloud?width=' + window_width + '&height=' + window_height;
+            //const goCloud = document.getElementById('go-cloud');
+            //goCloud.href = '/cloud?width=' + window_width + '&height=' + window_height;
         }
 
         window.onload = initCloud;
