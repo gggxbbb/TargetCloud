@@ -17,6 +17,15 @@ type TargetSchool struct {
 	Value int
 }
 
+type SubmitRecord struct {
+	gorm.Model
+	TargetName string
+	FromIP     string
+	FromUA     string
+	FromRef    string
+	FromName   string
+}
+
 //go:embed templates/*
 var templateFiles embed.FS
 
@@ -28,7 +37,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	err = db.AutoMigrate(&TargetSchool{})
+	err = db.AutoMigrate(&TargetSchool{}, &SubmitRecord{})
 	if err != nil {
 		return
 	}
@@ -54,6 +63,12 @@ func main() {
 		} else {
 			db.Create(&TargetSchool{Name: name, Value: 1})
 		}
+		db.Create(&SubmitRecord{
+			TargetName: name,
+			FromIP:     context.ClientIP(),
+			FromUA:     context.Request.UserAgent(),
+			FromRef:    context.Request.Referer(),
+		})
 		context.Redirect(http.StatusMovedPermanently, "/")
 	})
 	r.GET("/cloud", func(context *gin.Context) {
