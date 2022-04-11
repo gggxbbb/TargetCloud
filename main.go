@@ -3,7 +3,6 @@ package main
 import (
 	"embed"
 	"github.com/gin-gonic/gin"
-	"github.com/go-echarts/go-echarts/charts"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"html/template"
@@ -72,21 +71,30 @@ func main() {
 			wcData[targetSchools[v].Name] = targetSchools[v].Value
 		}
 
-		wc := charts.NewWordCloud()
+		/*
+			wc := charts.NewWordCloud()
 
-		width := context.DefaultQuery("width", "800")
-		height := context.DefaultQuery("height", "400")
+			width := context.DefaultQuery("width", "800")
+			height := context.DefaultQuery("height", "400")
 
-		wc.SetGlobalOptions(
-			charts.TitleOpts{Title: "", Subtitle: ""},
-			charts.InitOpts{PageTitle: "目标高校词云", Width: width + "px", Height: height + "px"},
-			charts.ToolboxOpts{Show: false},
-		)
-		wc.Add("", wcData, charts.WordCloudOpts{Shape: "star"})
-		err := wc.Render(context.Writer)
-		if err != nil {
-			return
-		}
+			wc.SetGlobalOptions(
+				charts.TitleOpts{Title: "", Subtitle: ""},
+				charts.InitOpts{PageTitle: "目标高校词云", Width: width + "px", Height: height + "px"},
+				charts.ToolboxOpts{Show: false},
+			)
+			wc.Add("", wcData, charts.WordCloudOpts{Shape: "star"})
+			err := wc.Render(context.Writer)
+
+			if err != nil {
+				return
+			}
+		*/
+
+		context.JSON(http.StatusOK, gin.H{
+			"code": http.StatusOK,
+			"size": len(wcData),
+			"data": wcData,
+		})
 	})
 	err = r.Run("0.0.0.0:8054")
 	if err != nil {

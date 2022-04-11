@@ -6,5 +6,9 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="@picocss/pico" level="application" />
+    <orderEntry type="library" name="pico" level="application" />
+    <orderEntry type="library" name="wordcloud2" level="application" />
+    <orderEntry type="library" name="d3.layout.cloud" level="application" />
+    <orderEntry type="library" name="d3.v7" level="application" />
   </component>
 </module>

@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-cn">
+<html lang="zh-cn" data-theme="light">
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>目标高校词云</title>
     <link rel="stylesheet" href="https://static.evax.top/css/pico.min.css">
+    <script src="https://static.evax.top/js/wordcloud2.js"></script>
     <style>
         #cloud {
             width: 100%;
@@ -60,8 +61,7 @@
         </form>
     </details>
 
-    <!--suppress HtmlUnknownTarget, HtmlDeprecatedAttribute -->
-    <iframe id="cloud" frameborder="0" scrolling="no"></iframe>
+    <div id="cloud"></div>
 
     <!--
     <div style="text-align: center;">
@@ -71,8 +71,37 @@
 
     <!--suppress JSSuspiciousNameCombination -->
     <script>
+
+        window.main_data = []
+
         function initCloud() {
 
+            ensureSize();
+            document.getElementById('cloud');
+            const http = new XMLHttpRequest();
+            http.onreadystatechange = function () {
+                let data;
+                let wcData;
+                if (http.readyState === 4 && http.status === 200) {
+                    data = JSON.parse(http.responseText)["data"];
+                    console.log(data);
+                    wcData = [];
+                    window.main_data = [];
+                    for (let key in data) {
+                        wcData.push([key, data[key]]);
+                    }
+                    window.main_data = wcData;
+
+                    draw();
+
+                }
+            }
+            http.open('GET', '/cloud', true);
+            http.send();
+
+        }
+
+        function ensureSize() {
 
             const window_width = window.innerWidth;
             const window_height = window.innerHeight;
@@ -88,14 +117,33 @@
             }
 
             cloud.style.height = height + 'px';
-            cloud.src = '/cloud?width=' + width + '&height=' + height;
 
-            //const goCloud = document.getElementById('go-cloud');
-            //goCloud.href = '/cloud?width=' + window_width + '&height=' + window_height;
+            cloud.innerHTML = '';
+            draw();
         }
 
         window.onload = initCloud;
-        window.onresize = initCloud;
+        window.onresize = ensureSize;
+
+        function draw() {
+            const cloud = document.getElementById('cloud');
+            let wF = cloud.offsetWidth / 50;
+            if (wF >= 16) {
+                wF = 16;
+            }
+            if (wF <= 8) {
+                wF = 8;
+            }
+            cloud.innerHTML = '';
+            WordCloud(cloud, {
+                list: window.main_data,
+                gridSize: 8,
+                weightFactor: wF,
+                fontFamily: 'Hiragino Mincho Pro, serif',
+                color: 'random-dark',
+                drawOutOfBound: true,
+            })
+        }
 
     </script>
 
