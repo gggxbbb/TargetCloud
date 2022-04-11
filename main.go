@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"embed"
 	"github.com/gin-gonic/gin"
+	"github.com/tealeg/xlsx"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"html/template"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 import _ "embed"
@@ -39,7 +43,7 @@ func main() {
 	}
 	err = db.AutoMigrate(&TargetSchool{}, &SubmitRecord{})
 	if err != nil {
-		return
+		panic(err)
 	}
 
 	r := gin.Default()
@@ -49,9 +53,13 @@ func main() {
 		panic(err)
 	}
 	r.SetHTMLTemplate(templates)
+
+	// 主页面
 	r.GET("/", func(context *gin.Context) {
 		context.HTML(http.StatusOK, "index.html", gin.H{})
 	})
+
+	// 提交记录
 	r.POST("/add", func(context *gin.Context) {
 		name := context.PostForm("target")
 		//If the name is already in the database, update the value
@@ -71,12 +79,16 @@ func main() {
 		})
 		context.Redirect(http.StatusMovedPermanently, "/")
 	})
+
+	// 词云 JSON API
 	r.GET("/cloud", func(context *gin.Context) {
 
 		var targetSchools []TargetSchool
 
 		re := db.Find(&targetSchools)
 		if re.Error != nil {
+			//goland:noinspection GoUnhandledErrorResult
+			context.Error(err)
 			panic(re.Error)
 		}
 
@@ -111,6 +123,50 @@ func main() {
 			"data": wcData,
 		})
 	})
+
+	// 导出 xlsx 文件
+	r.GET("/xlsx", func(context *gin.Context) {
+
+		file := xlsx.NewFile()
+		sheet, err := file.AddSheet("目标高校")
+		if err != nil {
+			panic(err)
+		}
+
+		header := sheet.AddRow()
+		header.AddCell().Value = "目标高校名称"
+		header.AddCell().Value = "提交人数"
+
+		var targetSchools []TargetSchool
+		re := db.Find(&targetSchools)
+		if re.Error != nil {
+			//goland:noinspection ALL
+			context.Error(re.Error)
+			panic(re.Error)
+		}
+
+		for v := range targetSchools {
+			row := sheet.AddRow()
+			row.AddCell().Value = targetSchools[v].Name
+			row.AddCell().Value = strconv.Itoa(targetSchools[v].Value)
+		}
+
+		// 根据时间生成文件名
+		now := time.Now()
+		filename := "target" + now.Format("20060102150405") + ".xlsx"
+
+		buf := new(bytes.Buffer)
+
+		err = file.Write(buf)
+		if err != nil {
+			panic(err)
+		}
+
+		context.Header("Content-Disposition", "attachment; filename="+filename)
+		context.Data(http.StatusOK, "application/vnd.ms-excel", buf.Bytes())
+
+	})
+
 	err = r.Run("0.0.0.0:8054")
 	if err != nil {
 		return
