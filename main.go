@@ -8,6 +8,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"html/template"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
@@ -34,6 +35,10 @@ type SubmitRecord struct {
 var templateFiles embed.FS
 
 func main() {
+
+	token := RandString(32)
+
+	println("token: " + token)
 
 	db, err := gorm.Open(sqlite.Open("targets.db"), &gorm.Config{
 		SkipDefaultTransaction: true,
@@ -140,8 +145,7 @@ func main() {
 		var targetSchools []TargetSchool
 		re := db.Find(&targetSchools)
 		if re.Error != nil {
-			//goland:noinspection ALL
-			context.Error(re.Error)
+			_ = context.Error(re.Error)
 			panic(re.Error)
 		}
 
@@ -167,8 +171,93 @@ func main() {
 
 	})
 
+	// 导出提交记录
+	r.GET("/data", func(context *gin.Context) {
+
+		if context.DefaultQuery("token", "") == token {
+
+			file := xlsx.NewFile()
+			sheet, err := file.AddSheet("目标高校")
+			if err != nil {
+				panic(err)
+			}
+
+			header := sheet.AddRow()
+			header.AddCell().Value = "目标高校名称"
+			header.AddCell().Value = "提交人数"
+
+			var targetSchools []TargetSchool
+			re := db.Find(&targetSchools)
+			if re.Error != nil {
+				_ = context.Error(re.Error)
+				panic(re.Error)
+			}
+
+			for v := range targetSchools {
+				row := sheet.AddRow()
+				row.AddCell().Value = targetSchools[v].Name
+				row.AddCell().Value = strconv.Itoa(targetSchools[v].Value)
+			}
+
+			sheet2, err := file.AddSheet("提交记录")
+			if err != nil {
+				_ = context.Error(err)
+				panic(err)
+			}
+
+			header2 := sheet2.AddRow()
+			header2.AddCell().Value = "提交时间"
+			header2.AddCell().Value = "目标高校名称"
+			header2.AddCell().Value = "来源 IP"
+			header2.AddCell().Value = "来源 UA"
+			header2.AddCell().Value = "来源 Ref"
+
+			var submitRecords []SubmitRecord
+			re = db.Find(&submitRecords)
+			if re.Error != nil {
+				_ = context.Error(re.Error)
+				panic(re.Error)
+			}
+
+			for v := range submitRecords {
+				row := sheet2.AddRow()
+				row.AddCell().Value = submitRecords[v].CreatedAt.Format("2006-01-02 15:04:05")
+				row.AddCell().Value = submitRecords[v].TargetName
+				row.AddCell().Value = submitRecords[v].FromIP
+				row.AddCell().Value = submitRecords[v].FromName
+				row.AddCell().Value = submitRecords[v].FromName
+			}
+
+			// 根据时间生成文件名
+			now := time.Now()
+			filename := "data" + now.Format("20060102150405") + ".xlsx"
+
+			buf := new(bytes.Buffer)
+
+			err = file.Write(buf)
+			if err != nil {
+				panic(err)
+			}
+
+			context.Header("Content-Disposition", "attachment; filename="+filename)
+			context.Data(http.StatusOK, "application/vnd.ms-excel", buf.Bytes())
+		} else {
+			context.AbortWithStatus(http.StatusForbidden)
+		}
+	})
+
 	err = r.Run("0.0.0.0:8054")
 	if err != nil {
 		return
 	}
+}
+
+func RandString(n int) string {
+	var letter = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letter[rand.Intn(len(letter))]
+	}
+	return string(b)
 }
