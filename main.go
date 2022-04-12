@@ -67,7 +67,6 @@ func main() {
 	// 提交记录
 	r.POST("/add", func(context *gin.Context) {
 		name := context.PostForm("target")
-		//If the name is already in the database, update the value
 		var target TargetSchool
 		db.Where("name = ?", name).First(&target)
 		if target.Name != "" {
@@ -92,8 +91,7 @@ func main() {
 
 		re := db.Find(&targetSchools)
 		if re.Error != nil {
-			//goland:noinspection GoUnhandledErrorResult
-			context.Error(err)
+			_ = context.Error(err)
 			panic(re.Error)
 		}
 
@@ -102,25 +100,6 @@ func main() {
 		for v := range targetSchools {
 			wcData[targetSchools[v].Name] = targetSchools[v].Value
 		}
-
-		/*
-			wc := charts.NewWordCloud()
-
-			width := context.DefaultQuery("width", "800")
-			height := context.DefaultQuery("height", "400")
-
-			wc.SetGlobalOptions(
-				charts.TitleOpts{Title: "", Subtitle: ""},
-				charts.InitOpts{PageTitle: "目标高校词云", Width: width + "px", Height: height + "px"},
-				charts.ToolboxOpts{Show: false},
-			)
-			wc.Add("", wcData, charts.WordCloudOpts{Shape: "star"})
-			err := wc.Render(context.Writer)
-
-			if err != nil {
-				return
-			}
-		*/
 
 		context.JSON(http.StatusOK, gin.H{
 			"code": http.StatusOK,
